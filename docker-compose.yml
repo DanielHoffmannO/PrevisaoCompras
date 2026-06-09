@@ -1,0 +1,25 @@
+services:
+  api:
+    build:
+      context: .
+      target: api
+    ports:
+      - "5000:5000"
+    volumes:
+      - db-data:/app/data
+    environment:
+      - ConnectionStrings__Default=Data Source=/app/data/previsao.db
+
+  worker:
+    build:
+      context: .
+      target: worker
+    volumes:
+      - db-data:/app/data
+    environment:
+      - ConnectionStrings__Default=Data Source=/app/data/previsao.db
+    depends_on:
+      - api
+
+volumes:
+  db-data:

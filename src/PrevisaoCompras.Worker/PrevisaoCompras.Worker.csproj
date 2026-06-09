@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>dotnet-PrevisaoCompras.Worker-730d18a6-edc7-4c67-b535-1129449baeec</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.14" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PrevisaoCompras.Domain\PrevisaoCompras.Domain.csproj" />
+    <ProjectReference Include="..\PrevisaoCompras.Persistence\PrevisaoCompras.Persistence.csproj" />
+  </ItemGroup>
+</Project>

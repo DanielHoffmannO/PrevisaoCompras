@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Previsão de Compras</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: system-ui, sans-serif; background: #f1f5f9; color: #1e293b; }
+    .container { max-width: 1100px; margin: 0 auto; padding: 2rem; }
+    h1 { font-size: 1.5rem; margin-bottom: 0.5rem; }
+    .subtitle { color: #64748b; margin-bottom: 2rem; font-size: 0.9rem; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem; }
+    .card { background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+    .card h2 { font-size: 1rem; margin-bottom: 1rem; color: #334155; }
+    .full { grid-column: 1 / -1; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    th, td { padding: 0.5rem 0.75rem; text-align: left; border-bottom: 1px solid #e2e8f0; }
+    th { background: #f8fafc; font-weight: 600; color: #64748b; text-transform: uppercase; font-size: 0.75rem; }
+    .btn { padding: 0.5rem 1.2rem; background: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 600; }
+    .btn:hover { background: #059669; }
+    .badge { display: inline-block; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+    .badge-up { background: #dcfce7; color: #166534; }
+    .badge-down { background: #fef2f2; color: #991b1b; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+    @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div>
+        <h1>📊 Previsão de Compras</h1>
+        <p class="subtitle">Análise de consumo e previsão por média móvel ponderada</p>
+      </div>
+      <button class="btn" onclick="gerarPrevisao()">Gerar Previsão</button>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h2>Consumo Mensal (quantidade)</h2>
+        <canvas id="chartHistorico"></canvas>
+      </div>
+      <div class="card">
+        <h2>Previsão vs Último Mês</h2>
+        <canvas id="chartPrevisao"></canvas>
+      </div>
+      <div class="card full">
+        <h2>Tabela de Previsões</h2>
+        <table>
+          <thead><tr><th>Produto</th><th>Última Compra (qtd)</th><th>Previsão</th><th>Tendência</th></tr></thead>
+          <tbody id="tabelaPrevisao"><tr><td colspan="4">Carregando...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API = '';
+    const cores = ['#10b981','#06b6d4','#8b5cf6','#f59e0b','#ef4444','#ec4899','#14b8a6','#f97316','#6366f1','#84cc16'];
+
+    async function load() {
+      const res = await fetch(`${API}/api/dashboard`);
+      const data = await res.json();
+      renderHistorico(data);
+      renderPrevisao(data);
+      renderTabela(data);
+    }
+
+    function renderHistorico(data) {
+      const meses = [...new Set(data.historico.map(h => {
+        const d = new Date(h.dataCompra);
+        return `${d.getMonth()+1}/${d.getFullYear()}`;
+      }))].sort();
+
+      const datasets = data.produtos.map((p, i) => {
+        const porMes = meses.map(m => {
+          const [mes, ano] = m.split('/').map(Number);
+          return data.historico
+            .filter(h => h.produtoId === p.id && new Date(h.dataCompra).getMonth()+1 === mes && new Date(h.dataCompra).getFullYear() === ano)
+            .reduce((s, h) => s + h.quantidade, 0);
+        });
+        return { label: p.nome, data: porMes, borderColor: cores[i % cores.length], tension: 0.3, fill: false };
+      });
+
+      new Chart(document.getElementById('chartHistorico'), {
+        type: 'line',
+        data: { labels: meses, datasets },
+        options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12 } } }, scales: { y: { beginAtZero: true } } }
+      });
+    }
+
+    function renderPrevisao(data) {
+      const labels = data.previsoes.map(p => p.produtoNome);
+      const valores = data.previsoes.map(p => p.quantidadePrevista);
+
+      new Chart(document.getElementById('chartPrevisao'), {
+        type: 'bar',
+        data: { labels, datasets: [{ label: 'Qtd Prevista', data: valores, backgroundColor: cores }] },
+        options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+      });
+    }
+
+    function renderTabela(data) {
+      const tbody = document.getElementById('tabelaPrevisao');
+      if (!data.previsoes.length) { tbody.innerHTML = '<tr><td colspan="4">Clique em "Gerar Previsão" para começar</td></tr>'; return; }
+
+      tbody.innerHTML = data.previsoes.map(p => {
+        const ultimaCompra = data.historico.filter(h => h.produtoId === p.produtoId).slice(-1)[0];
+        const qtdAnterior = ultimaCompra ? ultimaCompra.quantidade : 0;
+        const diff = p.quantidadePrevista - qtdAnterior;
+        const badge = diff >= 0
+          ? `<span class="badge badge-up">▲ +${diff}</span>`
+          : `<span class="badge badge-down">▼ ${diff}</span>`;
+        return `<tr><td>${p.produtoNome}</td><td>${qtdAnterior}</td><td><strong>${p.quantidadePrevista}</strong></td><td>${badge}</td></tr>`;
+      }).join('');
+    }
+
+    async function gerarPrevisao() {
+      await fetch(`${API}/api/previsoes/gerar`, { method: 'POST' });
+      location.reload();
+    }
+
+    load();
+  </script>
+</body>
+</html>
