@@ -9,6 +9,11 @@ services:
       - db-data:/app/data
     environment:
       - ConnectionStrings__Default=Data Source=/app/data/previsao.db
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5000/api/produtos || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
   worker:
     build:
@@ -19,7 +24,8 @@ services:
     environment:
       - ConnectionStrings__Default=Data Source=/app/data/previsao.db
     depends_on:
-      - api
+      api:
+        condition: service_healthy
 
 volumes:
   db-data:

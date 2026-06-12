@@ -12,12 +12,10 @@ builder.Services.AddHostedService<PrevisaoWorker>();
 
 var host = builder.Build();
 
-// Seed
 using (var scope = host.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.EnsureCreated();
-    DbSeed.Run(db);
 }
 
 host.Run();
