@@ -1,5 +1,4 @@
 # Previsão de Compras
-
 <img width="590" height="561" alt="image" src="https://github.com/user-attachments/assets/957727a6-4626-41d9-86ed-08d9d118bee2" />
 
 Sistema de previsão de compras para estabelecimentos (mercado, feira, restaurante) usando **média móvel ponderada**. Analisa o histórico de consumo e gera previsões para evitar excesso ou falta de produtos.
