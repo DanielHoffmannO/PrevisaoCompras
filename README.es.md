@@ -72,7 +72,3 @@ src/
 ├── PrevisaoCompras.Worker       ← Background Service (previsión cada 6h)
 └── PrevisaoCompras.Api          ← Minimal API + Dashboard (wwwroot)
 ```
-
-## Autor
-
-Daniel Hoffmann
