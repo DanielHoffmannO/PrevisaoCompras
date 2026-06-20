@@ -1,3 +1,5 @@
+🌐 [English](README.en.md) | [Español](README.es.md)
+
 # Previsão de Compras
 <img width="590" height="561" alt="image" src="https://github.com/user-attachments/assets/957727a6-4626-41d9-86ed-08d9d118bee2" />
 
