@@ -1,86 +1,101 @@
 🌐 [English](README.en.md) | [Español](README.es.md)
 
-# Previsão de Compras
+# 📊 Previsão de Compras
+
+[![.NET CI](https://github.com/DanielHoffmannO/PrevisaoCompras/actions/workflows/dotnet.yml/badge.svg)](https://github.com/DanielHoffmannO/PrevisaoCompras/actions/workflows/dotnet.yml)
+![.NET 9](https://img.shields.io/badge/.NET-9.0-512BD4?logo=dotnet)
+![SQLite](https://img.shields.io/badge/SQLite-003B57?logo=sqlite&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+> Sistema inteligente de previsão de compras para mercado e feira, utilizando **média móvel ponderada** sobre o histórico de consumo. Ajuda a planejar quanto comprar de cada produto no próximo mês com base nos últimos 6 meses.
+
 <img width="590" height="561" alt="image" src="https://github.com/user-attachments/assets/957727a6-4626-41d9-86ed-08d9d118bee2" />
 
-Sistema de previsão de compras para estabelecimentos (mercado, feira, restaurante) usando **média móvel ponderada**. Analisa o histórico de consumo e gera previsões para evitar excesso ou falta de produtos.
+## 🛠️ Tech Stack
 
-## Como funciona
-
-1. **Worker Service** roda em background a cada 6h, analisa o histórico de compras dos últimos 6 meses
-2. Aplica **média móvel ponderada** — meses mais recentes têm peso maior (6, 5, 4, 3, 2, 1)
-3. Gera previsões de quantidade para o próximo mês
-4. **Dashboard** exibe gráficos de consumo e previsão
-
-## Tech Stack
-
-| Componente | Tecnologia |
-|-----------|-----------|
-| Backend | .NET 9, Worker Service |
-| API | ASP.NET Core Minimal APIs |
-| Banco | SQLite (auto-contido) |
-| Algoritmo | Média Móvel Ponderada |
-| Front | HTML + Chart.js (single page) |
+| Camada | Tecnologia |
+|--------|-----------|
+| Backend API | .NET 9 / ASP.NET Core Minimal APIs |
+| Worker | .NET 9 Worker Service (executa a cada 6h) |
+| Banco de Dados | SQLite + EF Core |
+| Frontend | HTML + Chart.js (single page dashboard) |
 | Infra | Docker Compose |
+| CI | GitHub Actions |
 
-## Executar com Docker
+## 🚀 Como Rodar
 
-```bash
-docker-compose up --build
-```
-
-- **Dashboard:** http://localhost:5000
-- **API:** http://localhost:5000/api/dashboard
-
-## Executar local (sem Docker)
+### Docker Compose (recomendado)
 
 ```bash
-cd src
-dotnet run --project PrevisaoCompras.Api
+docker compose up --build
 ```
 
-O banco SQLite é criado automaticamente com dados de exemplo (10 produtos × 12 meses).
+### Local
 
-## Endpoints
+```bash
+dotnet run --project src/PrevisaoCompras.Api
+```
+
+Acesse o dashboard em **http://localhost:5000**
+
+## 📡 Endpoints
 
 | Método | Rota | Descrição |
 |--------|------|-----------|
-| GET | `/api/produtos` | Lista todos os produtos |
-| GET | `/api/historico` | Histórico de compras (12 meses) |
-| GET | `/api/historico/{id}` | Histórico por produto |
-| GET | `/api/previsoes?mes=X&ano=Y` | Previsões filtradas |
-| GET | `/api/dashboard` | Dados consolidados (front) |
-| POST | `/api/previsoes/gerar` | Força geração de previsão |
+| GET | `/` | Dashboard (HTML + gráficos) |
+| GET | `/api/dashboard` | Dados de previsão (JSON) |
 
-## Algoritmo de Previsão
+## 🧮 Algoritmo
 
-**Média Móvel Ponderada** com janela de 6 meses:
+O sistema utiliza **Média Móvel Ponderada (WMA)** com janela de 6 meses, onde meses mais recentes têm maior peso:
+
+$$
+\text{Previsão} = \frac{\sum_{i=1}^{n} w_i \cdot x_i}{\sum_{i=1}^{n} w_i}
+$$
+
+**Pesos:** `[6, 5, 4, 3, 2, 1]` (mês mais recente → peso 6)
+
+### Exemplo
+
+| Mês | Quantidade | Peso |
+|-----|-----------|------|
+| Jun (mais recente) | 10 | 6 |
+| Mai | 8 | 5 |
+| Abr | 12 | 4 |
+| Mar | 6 | 3 |
+| Fev | 9 | 2 |
+| Jan | 7 | 1 |
+
+$$
+\text{Previsão} = \frac{(10 \times 6) + (8 \times 5) + (12 \times 4) + (6 \times 3) + (9 \times 2) + (7 \times 1)}{6 + 5 + 4 + 3 + 2 + 1} = \frac{60+40+48+18+18+7}{21} = 9.1
+$$
+
+## 🏗️ Arquitetura
 
 ```
-Previsão = Σ(quantidade_mês × peso) / Σ(pesos)
-
-Pesos: [6, 5, 4, 3, 2, 1] (mais recente = maior peso)
+┌─────────────────────────────────────────┐
+│            Docker Compose               │
+├─────────────────┬───────────────────────┤
+│   API (.NET 9)  │   Worker (.NET 9)     │
+│   Minimal APIs  │   BackgroundService   │
+│   + Dashboard   │   Executa a cada 6h   │
+├─────────────────┴───────────────────────┤
+│           EF Core + SQLite              │
+│     (Seed: 10 produtos × 12 meses)     │
+└─────────────────────────────────────────┘
 ```
 
-Exemplo: se nos últimos 6 meses comprou [10, 8, 12, 9, 11, 7]:
-```
-= (10×6 + 8×5 + 12×4 + 9×3 + 11×2 + 7×1) / (6+5+4+3+2+1)
-= (60 + 40 + 48 + 27 + 22 + 7) / 21
-= 204 / 21 ≈ 10
-```
+- **API**: Serve o dashboard e expõe os dados de previsão via JSON
+- **Worker**: Recalcula as previsões periodicamente (a cada 6h) analisando o histórico dos últimos 6 meses
+- **SQLite**: Banco leve, sem necessidade de servidor externo
 
-## Estrutura
+## 📄 Licença
 
-```
-src/
-├── PrevisaoCompras.Domain       ← Entidades e interfaces
-├── PrevisaoCompras.Persistence  ← EF Core, Repository, Service
-├── PrevisaoCompras.Worker       ← Background Service (previsão a cada 6h)
-└── PrevisaoCompras.Api          ← Minimal API + Dashboard (wwwroot)
-```
+Este projeto está sob a licença [MIT](LICENSE).
 
-## Dados de Exemplo (seed)
+## 👤 Autor
 
-10 produtos genéricos de mercado com 12 meses de histórico de compras variado:
-Arroz, Feijão, Leite, Banana, Tomate, Frango, Café, Açúcar, Óleo, Macarrão
+**Daniel Hoffmann**
 
+[![GitHub](https://img.shields.io/badge/GitHub-DanielHoffmannO-181717?logo=github)](https://github.com/DanielHoffmannO)
