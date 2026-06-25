@@ -1,6 +1,6 @@
-🌐 [English](README.en.md) | [Español](README.es.md)
+ðŸŒ [English](README.en.md) | [EspaÃ±ol](README.es.md)
 
-# 📊 Previsão de Compras
+# ðŸ“Š PrevisÃ£o de Compras
 
 [![.NET CI](https://github.com/DanielHoffmannO/PrevisaoCompras/actions/workflows/dotnet.yml/badge.svg)](https://github.com/DanielHoffmannO/PrevisaoCompras/actions/workflows/dotnet.yml)
 ![.NET 9](https://img.shields.io/badge/.NET-9.0-512BD4?logo=dotnet)
@@ -8,11 +8,11 @@
 ![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-> Sistema inteligente de previsão de compras para mercado e feira, utilizando **média móvel ponderada** sobre o histórico de consumo. Ajuda a planejar quanto comprar de cada produto no próximo mês com base nos últimos 6 meses.
+> Sistema inteligente de previsÃ£o de compras para mercado e feira, utilizando **mÃ©dia mÃ³vel ponderada** sobre o histÃ³rico de consumo. Ajuda a planejar quanto comprar de cada produto no prÃ³ximo mÃªs com base nos Ãºltimos 6 meses.
 
 <img width="590" height="561" alt="image" src="https://github.com/user-attachments/assets/957727a6-4626-41d9-86ed-08d9d118bee2" />
 
-## 🛠️ Tech Stack
+## ðŸ› ï¸ Tech Stack
 
 | Camada | Tecnologia |
 |--------|-----------|
@@ -23,7 +23,7 @@
 | Infra | Docker Compose |
 | CI | GitHub Actions |
 
-## 🚀 Como Rodar
+## ðŸš€ Como Rodar
 
 ### Docker Compose (recomendado)
 
@@ -39,26 +39,26 @@ dotnet run --project src/PrevisaoCompras.Api
 
 Acesse o dashboard em **http://localhost:5000**
 
-## 📡 Endpoints
+## ðŸ“¡ Endpoints
 
-| Método | Rota | Descrição |
+| MÃ©todo | Rota | DescriÃ§Ã£o |
 |--------|------|-----------|
-| GET | `/` | Dashboard (HTML + gráficos) |
-| GET | `/api/dashboard` | Dados de previsão (JSON) |
+| GET | `/` | Dashboard (HTML + grÃ¡ficos) |
+| GET | `/api/dashboard` | Dados de previsÃ£o (JSON) |
 
-## 🧮 Algoritmo
+## ðŸ§® Algoritmo
 
-O sistema utiliza **Média Móvel Ponderada (WMA)** com janela de 6 meses, onde meses mais recentes têm maior peso:
+O sistema utiliza **MÃ©dia MÃ³vel Ponderada (WMA)** com janela de 6 meses, onde meses mais recentes tÃªm maior peso:
 
 $$
-\text{Previsão} = \frac{\sum_{i=1}^{n} w_i \cdot x_i}{\sum_{i=1}^{n} w_i}
+\text{PrevisÃ£o} = \frac{\sum_{i=1}^{n} w_i \cdot x_i}{\sum_{i=1}^{n} w_i}
 $$
 
-**Pesos:** `[6, 5, 4, 3, 2, 1]` (mês mais recente → peso 6)
+**Pesos:** `[6, 5, 4, 3, 2, 1]` (mÃªs mais recente â†’ peso 6)
 
 ### Exemplo
 
-| Mês | Quantidade | Peso |
+| MÃªs | Quantidade | Peso |
 |-----|-----------|------|
 | Jun (mais recente) | 10 | 6 |
 | Mai | 8 | 5 |
@@ -68,33 +68,33 @@ $$
 | Jan | 7 | 1 |
 
 $$
-\text{Previsão} = \frac{(10 \times 6) + (8 \times 5) + (12 \times 4) + (6 \times 3) + (9 \times 2) + (7 \times 1)}{6 + 5 + 4 + 3 + 2 + 1} = \frac{60+40+48+18+18+7}{21} = 9.1
+\text{PrevisÃ£o} = \frac{(10 \times 6) + (8 \times 5) + (12 \times 4) + (6 \times 3) + (9 \times 2) + (7 \times 1)}{6 + 5 + 4 + 3 + 2 + 1} = \frac{60+40+48+18+18+7}{21} = 9.1
 $$
 
-## 🏗️ Arquitetura
+## ðŸ—ï¸ Arquitetura
 
 ```
-┌─────────────────────────────────────────┐
-│            Docker Compose               │
-├─────────────────┬───────────────────────┤
-│   API (.NET 9)  │   Worker (.NET 9)     │
-│   Minimal APIs  │   BackgroundService   │
-│   + Dashboard   │   Executa a cada 6h   │
-├─────────────────┴───────────────────────┤
-│           EF Core + SQLite              │
-│     (Seed: 10 produtos × 12 meses)     │
-└─────────────────────────────────────────┘
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚            Docker Compose               â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚   API (.NET 9)  â”‚   Worker (.NET 9)     â”‚
+â”‚   Minimal APIs  â”‚   BackgroundService   â”‚
+â”‚   + Dashboard   â”‚   Executa a cada 6h   â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚           EF Core + SQLite              â”‚
+â”‚     (Seed: 10 produtos Ã— 12 meses)     â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
-- **API**: Serve o dashboard e expõe os dados de previsão via JSON
-- **Worker**: Recalcula as previsões periodicamente (a cada 6h) analisando o histórico dos últimos 6 meses
+- **API**: Serve o dashboard e expÃµe os dados de previsÃ£o via JSON
+- **Worker**: Recalcula as previsÃµes periodicamente (a cada 6h) analisando o histÃ³rico dos Ãºltimos 6 meses
 - **SQLite**: Banco leve, sem necessidade de servidor externo
 
-## 📄 Licença
+## ðŸ“„ LicenÃ§a
 
-Este projeto está sob a licença [MIT](LICENSE).
+Este projeto estÃ¡ sob a licenÃ§a [MIT](LICENSE).
 
-## 👤 Autor
+## ðŸ‘¤ Autor
 
 **Daniel Hoffmann**
 
